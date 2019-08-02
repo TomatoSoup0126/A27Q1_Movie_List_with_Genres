@@ -31,14 +31,23 @@ const dataPanel = document.getElementById('data-Panel')
 
 
 
-
+//渲染左側目錄欄
 renderGenresList()
 
 axios.get(INDEX_URL).then((response) => {
   data.push(...response.data.results)
-  showTotalMovie(data)
+  showMovie(data)
 }).catch((err) => console.log(err))
 
+//監聽list, 更動active項目, 取得類型ID, 傳入filterByGenres
+listPanel.addEventListener('click', (event) => {
+  if (event.target.classList.contains('list-group-item')) {
+    genreActive(event)
+    let genresId = event.target.dataset['genresid']
+    console.log(genresId)
+    filterByGenres(Number(genresId)) //string轉number才能比對
+  }
+})
 
 
 // 生成左側目錄欄
@@ -49,14 +58,21 @@ function renderGenresList() {
     <a href="#" class="list-group-item list-group-item-action" data-genresId="${key}">${movieGenres[key]}</a>
   `
   }
-  console.log(htmlContent)
   listPanel.innerHTML = htmlContent
 }
 
+// 清除list item所有的active, 幫event.target加上active
+function genreActive(event) {
+  let genres = document.querySelectorAll('.list-group-item')
+  for (let i = 0; i < genres.length; i++) {
+    genres[i].classList.remove('active')
+  }
+  event.target.classList.add('active')
+}
 
 
-// 預設顯示所有電影
-function showTotalMovie(data) {
+// 顯示電影card
+function showMovie(data) {
   let htmlContent = ''
   data.forEach(function (item, index) {
     htmlContent += `
@@ -72,13 +88,18 @@ function showTotalMovie(data) {
           <span class="badge badge-light font-weight-light">${movieGenres[item.genres[i]]}</span>
       `
     }
-
     htmlContent += `
         </div >
      </div >
    </div >
   `
   })
-
   dataPanel.innerHTML = htmlContent
+}
+
+//用filter篩選電影類型組成新陣列,將新陣列傳入showMovie重新渲染
+function filterByGenres(num) {
+  let genresList = data.filter(item => item.genres.includes(num))
+  console.log(genresList)
+  showMovie(genresList)
 }
